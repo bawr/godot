@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  power_x11.h                                                          */
+/*  power_egl.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_X11_H
-#define POWER_X11_H
+#ifndef POWER_EGL_H
+#define POWER_EGL_H
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -63,4 +63,4 @@ public:
 	int get_power_percent_left();
 };
 
-#endif // POWER_X11_H
+#endif // POWER_EGL_H
