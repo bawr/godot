@@ -9,7 +9,7 @@ def is_active():
 
 
 def get_name():
-    return "X11"
+    return "EGL"
 
 
 def can_build():
@@ -348,7 +348,7 @@ def configure(env):
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/x11"])
-    env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED"])
+    env.Append(CPPDEFINES=["EGL_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED"])
     env.Append(LIBS=["GL", "pthread"])
 
     if platform.system() == "Linux":

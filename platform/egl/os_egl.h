@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_x11.h                                                             */
+/*  os_egl.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_X11_H
-#define OS_X11_H
+#ifndef OS_EGL_H
+#define OS_EGL_H
 
-#include "context_gl_x11.h"
+#include "context_gl_egl.h"
 #include "core/local_vector.h"
 #include "core/os/input.h"
-#include "crash_handler_x11.h"
+#include "crash_handler_egl.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
-#include "power_x11.h"
+#include "power_egl.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -77,7 +77,7 @@ typedef struct _xrr_monitor_info {
 
 #undef CursorShape
 
-class OS_X11 : public OS_Unix {
+class OS_EGL : public OS_Unix {
 
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -92,7 +92,7 @@ class OS_X11 : public OS_Unix {
 	int xdnd_version;
 
 #if defined(OPENGL_ENABLED)
-	ContextGL_X11 *context_gl;
+	ContextGL_EGL *context_gl;
 #endif
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
@@ -360,7 +360,7 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const;
 
 	void update_real_mouse_position();
-	OS_X11();
+	OS_EGL();
 };
 
 #endif

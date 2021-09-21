@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_x11.cpp                                                        */
+/*  context_gl_egl.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,40 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef CONTEXT_GL_EGL_H
+#define CONTEXT_GL_EGL_H
 
-#include "main/main.h"
-#include "os_x11.h"
+#ifdef EGL_ENABLED
 
-int main(int argc, char *argv[]) {
+#if defined(OPENGL_ENABLED)
 
-	OS_X11 os;
+#include "core/os/os.h"
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
 
-	setlocale(LC_CTYPE, "");
+struct ContextGL_EGL_Private;
 
-	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
-	char *ret = getcwd(cwd, PATH_MAX);
+class ContextGL_EGL {
 
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (err != OK) {
-		free(cwd);
-		return 255;
-	}
+public:
+	enum ContextType {
+		OLDSTYLE,
+		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE
+	};
 
-	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
-	Main::cleanup();
+private:
+	ContextGL_EGL_Private *p;
+	OS::VideoMode default_video_mode;
+	//::Colormap x11_colormap;
+	::Display *x11_display;
+	::Window &x11_window;
+	bool double_buffer;
+	bool direct_render;
+	int glx_minor, glx_major;
+	bool use_vsync;
+	ContextType context_type;
 
-	if (ret) { // Previous getcwd was successful
-		if (chdir(cwd) != 0) {
-			ERR_PRINT("Couldn't return to previous working directory.");
-		}
-	}
-	free(cwd);
+public:
+	void release_current();
+	void make_current();
+	void swap_buffers();
+	int get_window_width();
+	int get_window_height();
+	void *get_glx_context();
 
-	return os.get_exit_code();
-}
+	Error initialize();
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
+
+	ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
+	~ContextGL_EGL();
+};
+
+#endif
+
+#endif
+#endif
