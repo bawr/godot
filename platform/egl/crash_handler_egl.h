@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  key_mapping_x11.h                                                    */
+/*  crash_handler_egl.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef KEY_MAPPING_X11_H
-#define KEY_MAPPING_X11_H
+#ifndef CRASH_HANDLER_EGL_H
+#define CRASH_HANDLER_EGL_H
 
-#include <X11/XF86keysym.h>
-#include <X11/Xlib.h>
-#define XK_MISCELLANY
-#define XK_LATIN1
-#define XK_XKB_KEYS
-#include <X11/keysymdef.h>
+class CrashHandler {
 
-#include "core/os/keyboard.h"
-
-class KeyMappingX11 {
-	KeyMappingX11(){};
+	bool disabled;
 
 public:
-	static unsigned int get_keycode(KeySym p_keysym);
-	static KeySym get_keysym(unsigned int p_code);
-	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
-	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
+	void initialize();
+
+	void disable();
+	bool is_disabled() const { return disabled; };
+
+	CrashHandler();
+	~CrashHandler();
 };
 
-#endif
+#endif // CRASH_HANDLER_EGL_H

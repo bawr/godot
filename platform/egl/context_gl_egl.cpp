@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.cpp                                                   */
+/*  context_gl_egl.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "context_gl_x11.h"
+#include "context_gl_egl.h"
 
-#ifdef X11_ENABLED
+#ifdef EGL_ENABLED
 #if defined(OPENGL_ENABLED)
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,22 +45,22 @@
 
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
-struct ContextGL_X11_Private {
+struct ContextGL_EGL_Private {
 
 	::GLXContext glx_context;
 };
 
-void ContextGL_X11::release_current() {
+void ContextGL_EGL::release_current() {
 
 	glXMakeCurrent(x11_display, None, NULL);
 }
 
-void ContextGL_X11::make_current() {
+void ContextGL_EGL::make_current() {
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 }
 
-void ContextGL_X11::swap_buffers() {
+void ContextGL_EGL::swap_buffers() {
 
 	glXSwapBuffers(x11_display, x11_window);
 }
@@ -84,7 +84,7 @@ static void set_class_hint(Display *p_display, Window p_window) {
 	XFree(classHint);
 }
 
-Error ContextGL_X11::initialize() {
+Error ContextGL_EGL::initialize() {
 
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
@@ -212,7 +212,7 @@ Error ContextGL_X11::initialize() {
 	return OK;
 }
 
-int ContextGL_X11::get_window_width() {
+int ContextGL_EGL::get_window_width() {
 
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display, x11_window, &xwa);
@@ -220,14 +220,14 @@ int ContextGL_X11::get_window_width() {
 	return xwa.width;
 }
 
-int ContextGL_X11::get_window_height() {
+int ContextGL_EGL::get_window_height() {
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display, x11_window, &xwa);
 
 	return xwa.height;
 }
 
-void *ContextGL_X11::get_glx_context() {
+void *ContextGL_EGL::get_glx_context() {
 	if (p != NULL) {
 		return p->glx_context;
 	} else {
@@ -235,7 +235,7 @@ void *ContextGL_X11::get_glx_context() {
 	}
 }
 
-void ContextGL_X11::set_use_vsync(bool p_use) {
+void ContextGL_EGL::set_use_vsync(bool p_use) {
 	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
@@ -263,12 +263,12 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 		return;
 	use_vsync = p_use;
 }
-bool ContextGL_X11::is_using_vsync() const {
+bool ContextGL_EGL::is_using_vsync() const {
 
 	return use_vsync;
 }
 
-ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
+ContextGL_EGL::ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
 		x11_window(p_x11_window) {
 
 	default_video_mode = p_default_video_mode;
@@ -279,12 +279,12 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, c
 	double_buffer = false;
 	direct_render = false;
 	glx_minor = glx_major = 0;
-	p = memnew(ContextGL_X11_Private);
+	p = memnew(ContextGL_EGL_Private);
 	p->glx_context = 0;
 	use_vsync = false;
 }
 
-ContextGL_X11::~ContextGL_X11() {
+ContextGL_EGL::~ContextGL_EGL() {
 	release_current();
 	glXDestroyContext(x11_display, p->glx_context);
 	memdelete(p);

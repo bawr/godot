@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  power_x11.cpp                                                        */
+/*  power_egl.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -53,7 +53,7 @@ Adapted from corresponding SDL 2.0 code.
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "power_x11.h"
+#include "power_egl.h"
 
 #include <stdio.h>
 #include <unistd.h>

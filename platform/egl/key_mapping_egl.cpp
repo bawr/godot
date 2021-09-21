@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  key_mapping_x11.cpp                                                  */
+/*  key_mapping_egl.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "key_mapping_x11.h"
+#include "key_mapping_egl.h"
 
 /***** SCAN CODE CONVERSION ******/
 
