@@ -315,8 +315,8 @@ def configure(env):
     if not env["builtin_zlib"]:
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
-    env.Prepend(CPPPATH=["#platform/x11"])
-    env.Append(CPPDEFINES=["EGL_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED"])
+    env.Prepend(CPPPATH=["#platform/egl"])
+    env.Append(CPPDEFINES=["UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", "EGL_ENABLED"])
     env.Append(LIBS=["GL", "pthread"])
 
     if platform.system() == "Linux":
