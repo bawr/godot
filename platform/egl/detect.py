@@ -71,11 +71,8 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("use_msan", "Use LLVM/GCC compiler memory sanitizer (MSAN))", False),
-        BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
-        BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
@@ -218,9 +215,6 @@ def configure(env):
     env.ParseConfig("pkg-config xrender --cflags --libs")
     env.ParseConfig("pkg-config xi --cflags --libs")
 
-    if env["touch"]:
-        env.Append(CPPDEFINES=["TOUCH_ENABLED"])
-
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
@@ -316,32 +310,6 @@ def configure(env):
         env.Append(LIBS=["embree3"])
 
     ## Flags
-
-    if os.system("pkg-config --exists alsa") == 0:  # 0 means found
-        print("Enabling ALSA")
-        env["alsa"] = True
-        env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
-    else:
-        print("ALSA libraries not found, disabling driver")
-
-    if env["pulseaudio"]:
-        if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-            print("Enabling PulseAudio")
-            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
-        else:
-            print("PulseAudio development libraries not found, disabling driver")
-
-    if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
-        if env["udev"]:
-            if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                print("Enabling udev support")
-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
-            else:
-                print("libudev development libraries not found, disabling udev support")
-    else:
-        env["udev"] = False  # Linux specific
 
     # Linkflags below this line should typically stay the last ones
     if not env["builtin_zlib"]:
