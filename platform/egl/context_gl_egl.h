@@ -33,13 +33,8 @@
 
 #ifdef EGL_ENABLED
 
-#if defined(OPENGL_ENABLED)
-
 #include "core/os/os.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
-
-struct ContextGL_EGL_Private;
+#include <EGL/egl.h>
 
 class ContextGL_EGL {
 
@@ -51,14 +46,15 @@ public:
 	};
 
 private:
-	ContextGL_EGL_Private *p;
 	OS::VideoMode default_video_mode;
-	//::Colormap x11_colormap;
-	::Display *x11_display;
-	::Window &x11_window;
+	EGLDisplay eglDpy;
+	EGLConfig eglCfg;
+	EGLSurface eglSurf;
+	EGLContext eglCtx;
 	bool double_buffer;
 	bool direct_render;
-	int glx_minor, glx_major;
+	EGLint egl_major;
+	EGLint egl_minor;
 	bool use_vsync;
 	ContextType context_type;
 
@@ -81,5 +77,4 @@ public:
 
 #endif
 
-#endif
 #endif
