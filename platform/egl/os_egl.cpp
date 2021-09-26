@@ -32,7 +32,6 @@
 
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
-#include "detect_prime.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "main/main.h"
