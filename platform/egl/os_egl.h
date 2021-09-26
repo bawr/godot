@@ -39,9 +39,7 @@
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
 #include "main/input_default.h"
-#include "power_egl.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -106,11 +104,6 @@ class OS_EGL : public OS_Unix {
 	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
-	::XIC xic;
-	::XIM xim;
-	::XIMStyle xim_style;
-	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
-			::XPointer call_data);
 
 	// IME
 	bool im_active;
@@ -127,58 +120,19 @@ class OS_EGL : public OS_Unix {
 	int last_click_button_index;
 	uint32_t last_button_state;
 
-	struct {
-		int opcode;
-		Vector<int> touch_devices;
-		Map<int, Vector2> absolute_devices;
-		Map<int, Vector2> pen_pressure_range;
-		Map<int, Vector2> pen_tilt_x_range;
-		Map<int, Vector2> pen_tilt_y_range;
-		XIEventMask all_event_mask;
-		XIEventMask all_master_event_mask;
-		Map<int, Vector2> state;
-		double pressure;
-		bool pressure_supported;
-		Vector2 tilt;
-		Vector2 mouse_pos_to_filter;
-		Vector2 relative_motion;
-		Vector2 raw_pos;
-		Vector2 old_raw_pos;
-		::Time last_relative_time;
-	} xi;
-
-	bool refresh_device_info();
-
 	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
-	void flush_mouse_motion();
 
 	MouseMode mouse_mode;
 	Point2i center;
 
-	void _handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
-
 	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
-	String _get_clipboard_impl(Atom p_source, Window x11_window, Atom target) const;
-	String _get_clipboard(Atom p_source, Window x11_window) const;
-	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
-
 	mutable Mutex events_mutex;
-	Thread events_thread;
-	bool events_thread_done = false;
-	LocalVector<XEvent> polled_events;
-	static void _poll_events_thread(void *ud);
-	bool _wait_for_events() const;
-	void _poll_events();
 
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
-	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
-	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
-	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
-	void process_xevents();
 	virtual void delete_main_loop();
 
 	bool force_quit;
@@ -195,24 +149,6 @@ class OS_EGL : public OS_Unix {
 	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
-
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad;
-#endif
-
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
-
-	PowerX11 *power_manager;
 
 	bool layered_window;
 
@@ -359,7 +295,6 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
 
-	void update_real_mouse_position();
 	OS_EGL();
 };
 

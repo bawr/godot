@@ -9,14 +9,7 @@ common_egl = [
     "context_gl_egl.cpp",
     "crash_handler_egl.cpp",
     "os_egl.cpp",
-    "key_mapping_egl.cpp",
-    "joypad_linux.cpp",
-    "power_egl.cpp",
-    "detect_prime.cpp",
 ]
-
-if "udev" in env and env["udev"]:
-    common_egl.append("libudev-so_wrap.c")
 
 prog = env.add_program("#bin/godot", ["godot_egl.cpp"] + common_egl)
 
