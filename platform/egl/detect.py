@@ -317,7 +317,7 @@ def configure(env):
 
     env.Prepend(CPPPATH=["#platform/egl"])
     env.Append(CPPDEFINES=["UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", "EGL_ENABLED"])
-    env.Append(LIBS=["GL", "pthread"])
+    env.Append(LIBS=["OpenGL", "EGL", "pthread"])
 
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])

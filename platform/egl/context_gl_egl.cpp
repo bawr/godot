@@ -31,211 +31,95 @@
 #include "context_gl_egl.h"
 
 #ifdef EGL_ENABLED
-#if defined(OPENGL_ENABLED)
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include <EGL/egl.h>
 
-#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
-
-typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
-
-struct ContextGL_EGL_Private {
-
-	::GLXContext glx_context;
-};
 
 void ContextGL_EGL::release_current() {
-
-	glXMakeCurrent(x11_display, None, NULL);
+	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void ContextGL_EGL::make_current() {
-
-	glXMakeCurrent(x11_display, x11_window, p->glx_context);
+	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
 }
 
 void ContextGL_EGL::swap_buffers() {
-
-	glXSwapBuffers(x11_display, x11_window);
-}
-
-static bool ctxErrorOccurred = false;
-static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
-	ctxErrorOccurred = true;
-	return 0;
-}
-
-static void set_class_hint(Display *p_display, Window p_window) {
-	XClassHint *classHint;
-
-	/* set the name and class hints for the window manager to use */
-	classHint = XAllocClassHint();
-	if (classHint) {
-		classHint->res_name = (char *)"Godot_Engine";
-		classHint->res_class = (char *)"Godot";
-	}
-	XSetClassHint(p_display, p_window, classHint);
-	XFree(classHint);
+	eglSwapBuffers(eglDpy, eglSurf);
 }
 
 Error ContextGL_EGL::initialize() {
+	EGLint numConfigs;
 
-	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-
-	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
-
-	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);
-
-	static int visual_attribs[] = {
-		GLX_RENDER_TYPE, GLX_RGBA_BIT,
-		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-		GLX_DOUBLEBUFFER, true,
-		GLX_RED_SIZE, 1,
-		GLX_GREEN_SIZE, 1,
-		GLX_BLUE_SIZE, 1,
-		GLX_DEPTH_SIZE, 24,
-		None
+	static const EGLint visual_attribs_layers[] = {
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT | EGL_OPENGL_ES2_BIT,
+		EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_ALPHA_SIZE, 8,
+		EGL_DEPTH_SIZE, 24,
+		EGL_NONE
 	};
 
-	static int visual_attribs_layered[] = {
-		GLX_RENDER_TYPE, GLX_RGBA_BIT,
-		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-		GLX_DOUBLEBUFFER, true,
-		GLX_RED_SIZE, 8,
-		GLX_GREEN_SIZE, 8,
-		GLX_BLUE_SIZE, 8,
-		GLX_ALPHA_SIZE, 8,
-		GLX_DEPTH_SIZE, 24,
-		None
+	static const EGLint visual_attribs_simple[] = {
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT | EGL_OPENGL_ES2_BIT,
+		EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_DEPTH_SIZE, 24,
+		EGL_NONE
 	};
 
-	int fbcount;
-	GLXFBConfig fbconfig = 0;
-	XVisualInfo *vi = NULL;
+	static const EGLint pbufferAttribs[] = {
+		EGL_WIDTH, 512,
+		EGL_HEIGHT, 1024,
+		EGL_NONE,
+	};
 
-	XSetWindowAttributes swa;
-	swa.event_mask = StructureNotifyMask;
-	swa.border_pixel = 0;
-	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
+	static const EGLint contextAttribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION, 3,
+		EGL_CONTEXT_MINOR_VERSION, 3,
+		EGL_NONE,
+	};
+
+	eglDpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	eglInitialize(eglDpy, &egl_major, &egl_minor);
 
 	if (OS::get_singleton()->is_layered_allowed()) {
-		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
-
-		for (int i = 0; i < fbcount; i++) {
-			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
-			if (!vi)
-				continue;
-
-			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
-			if (!pict_format) {
-				XFree(vi);
-				vi = NULL;
-				continue;
-			}
-
-			fbconfig = fbc[i];
-			if (pict_format->direct.alphaMask > 0) {
-				break;
-			}
-		}
-		XFree(fbc);
-		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
-
-		swa.background_pixmap = None;
-		swa.background_pixel = 0;
-		swa.border_pixmap = None;
-		valuemask |= CWBackPixel;
-
+		eglChooseConfig(eglDpy, visual_attribs_layers, &eglCfg, 1, &numConfigs);
 	} else {
-		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
-
-		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
-
-		fbconfig = fbc[0];
-		XFree(fbc);
+		eglChooseConfig(eglDpy, visual_attribs_simple, &eglCfg, 1, &numConfigs);
 	}
 
-	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&ctxErrorHandler);
+	eglSurf = eglCreatePbufferSurface(eglDpy, eglCfg, pbufferAttribs);
+	eglBindAPI(EGL_OPENGL_API);
 
-	switch (context_type) {
-		case OLDSTYLE: {
+	eglCtx = eglCreateContext(eglDpy, eglCfg, EGL_NO_CONTEXT, contextAttribs);
 
-			p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
-			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
-		} break;
-		case GLES_2_0_COMPATIBLE: {
+	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
 
-			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
-			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
-		} break;
-		case GLES_3_0_COMPATIBLE: {
-
-			static int context_attribs[] = {
-				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-				GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-				GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
-				None
-			};
-
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
-			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
-		} break;
-	}
-
-	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
-	XStoreName(x11_display, x11_window, "Godot Engine");
-
-	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
-	set_class_hint(x11_display, x11_window);
-
-	if (!OS::get_singleton()->is_no_window_mode_enabled()) {
-		XMapWindow(x11_display, x11_window);
-	}
-
-	XSync(x11_display, False);
-	XSetErrorHandler(oldHandler);
-
-	glXMakeCurrent(x11_display, x11_window, p->glx_context);
-
-	XFree(vi);
-
+	use_vsync = false;
 	return OK;
 }
 
 int ContextGL_EGL::get_window_width() {
-
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, x11_window, &xwa);
-
-	return xwa.width;
+	return 512;
 }
 
 int ContextGL_EGL::get_window_height() {
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, x11_window, &xwa);
-
-	return xwa.height;
+	return 1024;
 }
 
 void *ContextGL_EGL::get_glx_context() {
-	if (p != NULL) {
-		return p->glx_context;
-	} else {
-		return NULL;
-	}
+	return eglCtx;
 }
 
 void ContextGL_EGL::set_use_vsync(bool p_use) {
+/*
 	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
@@ -262,33 +146,23 @@ void ContextGL_EGL::set_use_vsync(bool p_use) {
 	} else
 		return;
 	use_vsync = p_use;
+ */
 }
 bool ContextGL_EGL::is_using_vsync() const {
 
 	return use_vsync;
 }
 
-ContextGL_EGL::ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
-		x11_window(p_x11_window) {
-
-	default_video_mode = p_default_video_mode;
-	x11_display = p_x11_display;
-
-	context_type = p_context_type;
-
+ContextGL_EGL::ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) {
 	double_buffer = false;
 	direct_render = false;
-	glx_minor = glx_major = 0;
-	p = memnew(ContextGL_EGL_Private);
-	p->glx_context = 0;
-	use_vsync = false;
+	egl_major = 0;
+	egl_minor = 0;
 }
 
 ContextGL_EGL::~ContextGL_EGL() {
 	release_current();
-	glXDestroyContext(x11_display, p->glx_context);
-	memdelete(p);
+	eglTerminate(eglDpy);
 }
 
-#endif
 #endif
