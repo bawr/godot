@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 
 void ContextGL_EGL::release_current() {
@@ -86,7 +87,8 @@ Error ContextGL_EGL::initialize() {
 		EGL_NONE,
 	};
 
-	eglDpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+   	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+	eglDpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, EGL_DEFAULT_DISPLAY, NULL);
 	eglInitialize(eglDpy, &egl_major, &egl_minor);
 
 	if (OS::get_singleton()->is_layered_allowed()) {
