@@ -44,50 +44,10 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
-#include <X11/Xcursor/Xcursor.h>
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
-#include <X11/keysym.h>
-
-// Hints for X11 fullscreen
-typedef struct {
-	unsigned long flags;
-	unsigned long functions;
-	unsigned long decorations;
-	long inputMode;
-	unsigned long status;
-} Hints;
-
-typedef struct _xrr_monitor_info {
-	Atom name;
-	Bool primary;
-	Bool automatic;
-	int noutput;
-	int x;
-	int y;
-	int width;
-	int height;
-	int mwidth;
-	int mheight;
-	RROutput *outputs;
-} xrr_monitor_info;
-
-#undef CursorShape
-
 class OS_EGL : public OS_Unix {
 
 	Atom wm_delete;
-	Atom xdnd_enter;
-	Atom xdnd_position;
-	Atom xdnd_status;
-	Atom xdnd_action_copy;
-	Atom xdnd_drop;
-	Atom xdnd_finished;
-	Atom xdnd_selection;
 	Atom requested;
-
-	int xdnd_version;
 
 #if defined(OPENGL_ENABLED)
 	ContextGL_EGL *context_gl;
@@ -96,12 +56,7 @@ class OS_EGL : public OS_Unix {
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
-	Window x11_window;
-	Window xdnd_source_window;
 	MainLoop *main_loop;
-	::Display *x11_display;
-	char *xmbstring;
-	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
 
@@ -119,9 +74,6 @@ class OS_EGL : public OS_Unix {
 	uint64_t last_click_ms;
 	int last_click_button_index;
 	uint32_t last_button_state;
-
-	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
-	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 
 	MouseMode mouse_mode;
 	Point2i center;
@@ -142,11 +94,6 @@ class OS_EGL : public OS_Unix {
 
 	const char *cursor_theme;
 	int cursor_size;
-	XcursorImage *img[CURSOR_MAX];
-	Cursor cursors[CURSOR_MAX];
-	Cursor null_cursor;
-	CursorShape current_cursor;
-	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 
@@ -160,13 +107,6 @@ class OS_EGL : public OS_Unix {
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
-
-	typedef xrr_monitor_info *(*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
-	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
-	xrr_get_monitors_t xrr_get_monitors;
-	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
-	Bool xrandr_ext_ok;
 
 protected:
 	virtual int get_current_video_driver() const;
