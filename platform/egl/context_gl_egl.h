@@ -34,7 +34,9 @@
 #ifdef EGL_ENABLED
 
 #include "core/os/os.h"
+
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 class ContextGL_EGL {
 

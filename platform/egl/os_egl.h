@@ -46,9 +46,6 @@
 
 class OS_EGL : public OS_Unix {
 
-	Atom wm_delete;
-	Atom requested;
-
 #if defined(OPENGL_ENABLED)
 	ContextGL_EGL *context_gl;
 #endif
@@ -58,7 +55,6 @@ class OS_EGL : public OS_Unix {
 	List<String> args;
 	MainLoop *main_loop;
 	unsigned long last_timestamp;
-	::Time last_keyrelease_time;
 
 	// IME
 	bool im_active;
@@ -78,12 +74,7 @@ class OS_EGL : public OS_Unix {
 	MouseMode mouse_mode;
 	Point2i center;
 
-	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
-	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
-
 	mutable Mutex events_mutex;
-
-	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 
 	virtual void delete_main_loop();
 
@@ -117,9 +108,6 @@ protected:
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
-	void _window_changed(XEvent *event);
-
-	bool window_maximize_check(const char *p_atom_name) const;
 	bool is_window_maximize_allowed() const;
 
 public:

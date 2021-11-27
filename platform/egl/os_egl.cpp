@@ -48,19 +48,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/shape.h>
-
-// ICCCM
-#define WM_NormalState 1L // window normal state
-#define WM_IconicState 3L // window minimized
-// EWMH
-#define _NET_WM_STATE_REMOVE 0L // remove/unset property
-#define _NET_WM_STATE_ADD 1L // add/set property
-#define _NET_WM_STATE_TOGGLE 2L // toggle property
-
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -87,8 +74,6 @@ int OS_EGL::get_current_video_driver() const {
 }
 
 Error OS_EGL::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
-	long im_event_mask = 0;
 	last_button_state = 0;
 
 	last_click_ms = 0;
@@ -99,7 +84,6 @@ Error OS_EGL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	main_loop = NULL;
 	last_timestamp = 0;
 	last_mouse_pos_valid = false;
-	last_keyrelease_time = 0;
 
 // maybe contextgl wants to be in charge of creating the window
 #if defined(OPENGL_ENABLED)
@@ -210,8 +194,6 @@ Error OS_EGL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	im_active = false;
 	im_position = Vector2();
-
-	requested = None;
 
 	visual_server->init();
 
@@ -715,11 +697,6 @@ void OS_EGL::alert(const String &p_alert, const String &p_title) {
 	}
 }
 
-bool g_set_icon_error = false;
-int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
-	g_set_icon_error = true;
-	return 0;
-}
 
 void OS_EGL::set_icon(const Ref<Image> &p_icon) {
 }

@@ -273,7 +273,7 @@ def configure(env):
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/egl"])
-    env.Append(CPPDEFINES=["UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", "EGL_ENABLED"])
+    env.Append(CPPDEFINES=["UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", "EGL_ENABLED", "EGL_NO_X11"])
     env.Append(LIBS=["OpenGL", "EGL", "pthread"])
 
     if platform.system() == "Linux":
