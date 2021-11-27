@@ -35,10 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-
 void ContextGL_EGL::release_current() {
 	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
