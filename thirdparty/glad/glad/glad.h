@@ -90,6 +90,10 @@ GLAPI int gladLoadGL(void);
 
 GLAPI int gladLoadGLLoader(GLADloadproc);
 
+#if defined(EGL_ENABLED)
+void* eglGetProcAddress(char*);
+#endif
+
 #include <KHR/khrplatform.h>
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
