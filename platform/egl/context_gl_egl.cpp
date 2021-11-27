@@ -75,8 +75,8 @@ Error ContextGL_EGL::initialize() {
 	};
 
 	static const EGLint pbufferAttribs[] = {
-		EGL_WIDTH, 512,
-		EGL_HEIGHT, 1024,
+		EGL_WIDTH, 64,
+		EGL_HEIGHT, 128,
 		EGL_NONE,
 	};
 
@@ -107,11 +107,11 @@ Error ContextGL_EGL::initialize() {
 }
 
 int ContextGL_EGL::get_window_width() {
-	return 512;
+	return 64;
 }
 
 int ContextGL_EGL::get_window_height() {
-	return 1024;
+	return 128;
 }
 
 void *ContextGL_EGL::get_glx_context() {
@@ -153,7 +153,7 @@ bool ContextGL_EGL::is_using_vsync() const {
 	return use_vsync;
 }
 
-ContextGL_EGL::ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) {
+ContextGL_EGL::ContextGL_EGL(const OS::VideoMode &p_default_video_mode, ContextType p_context_type) {
 	double_buffer = false;
 	direct_render = false;
 	egl_major = 0;

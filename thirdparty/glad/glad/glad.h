@@ -32,6 +32,10 @@
 #endif
 #define __gl_h_
 
+#if defined(EGL_ENABLED)
+#include <EGL/egl.h>
+#endif
+
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
 #define APIENTRY __stdcall
 #endif
@@ -89,10 +93,6 @@ GLAPI struct gladGLversionStruct GLVersion;
 GLAPI int gladLoadGL(void);
 
 GLAPI int gladLoadGLLoader(GLADloadproc);
-
-#if defined(EGL_ENABLED)
-void* eglGetProcAddress(char*);
-#endif
 
 #include <KHR/khrplatform.h>
 typedef unsigned int GLenum;

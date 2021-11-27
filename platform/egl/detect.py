@@ -16,43 +16,8 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if x11_error:
-        return False
-
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
-    if x11_error:
-        return False
-
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
-    if x11_error:
-        print("xcursor not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null ")
-    if x11_error:
-        print("xinerama not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
-    if x11_error:
-        print("xext not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
-    if x11_error:
-        print("xrandr not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
-    if x11_error:
-        print("xrender not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null ")
-    if x11_error:
-        print("xi not found.. Aborting.")
+    pkg_error = os.system("pkg-config --version > /dev/null")
+    if pkg_error:
         return False
 
     return True
@@ -206,14 +171,6 @@ def configure(env):
             env.Append(LINKFLAGS=["-no-pie"])
 
     ## Dependencies
-
-    env.ParseConfig("pkg-config x11 --cflags --libs")
-    env.ParseConfig("pkg-config xcursor --cflags --libs")
-    env.ParseConfig("pkg-config xinerama --cflags --libs")
-    env.ParseConfig("pkg-config xext --cflags --libs")
-    env.ParseConfig("pkg-config xrandr --cflags --libs")
-    env.ParseConfig("pkg-config xrender --cflags --libs")
-    env.ParseConfig("pkg-config xi --cflags --libs")
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
