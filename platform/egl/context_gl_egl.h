@@ -71,7 +71,7 @@ public:
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	ContextGL_EGL(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
+	ContextGL_EGL(const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
 	~ContextGL_EGL();
 };
 
