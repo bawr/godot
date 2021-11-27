@@ -133,6 +133,10 @@ void* get_proc(const char *namez) {
     void* result = NULL;
     if(libGL == NULL) return NULL;
 
+#if defined(EGL_ENABLED)
+	return eglGetProcAddress(namez);
+#endif
+
 #if !defined(__APPLE__) && !defined(__HAIKU__)
     if(gladGetProcAddressPtr != NULL) {
         result = gladGetProcAddressPtr(namez);
