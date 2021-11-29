@@ -164,8 +164,6 @@ Error OS_EGL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 #endif
 
-	ERR_PRINT("GLES3 selected, but we're about to crash... ;_;")
-
 	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
