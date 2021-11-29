@@ -152,7 +152,6 @@ Error RasterizerGLES3::is_viable() {
 	}
 
 #endif // GLAD_ENABLED
-	ERR_PRINT("gloadLoadGL() succeeded, but wrong - patch with eglGetProcAddress");
 	return OK;
 }
 
