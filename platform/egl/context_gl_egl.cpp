@@ -31,8 +31,6 @@
 #include "context_gl_egl.h"
 
 #ifdef EGL_ENABLED
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 void ContextGL_EGL::release_current() {
@@ -47,7 +45,20 @@ void ContextGL_EGL::swap_buffers() {
 	eglSwapBuffers(eglDpy, eglSurf);
 }
 
-Error ContextGL_EGL::initialize() {
+void ContextGL_EGL::set_buffer_size(const int width, const int height) {
+	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx);
+	eglDestroySurface(eglDpy, eglSurf);
+
+	static const EGLint pbufferAttribs[] = {
+		EGL_WIDTH, width,
+		EGL_HEIGHT, height,
+		EGL_NONE,
+	};
+	eglSurf = eglCreatePbufferSurface(eglDpy, eglCfg, pbufferAttribs);
+	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
+}
+
+Error ContextGL_EGL::initialize(const int width, const int height) {
 	EGLint numConfigs;
 
 	static const EGLint visual_attribs_layers[] = {
@@ -72,8 +83,8 @@ Error ContextGL_EGL::initialize() {
 	};
 
 	static const EGLint pbufferAttribs[] = {
-		EGL_WIDTH, 64,
-		EGL_HEIGHT, 128,
+		EGL_WIDTH, width,
+		EGL_HEIGHT, height,
 		EGL_NONE,
 	};
 
@@ -105,11 +116,15 @@ Error ContextGL_EGL::initialize() {
 }
 
 int ContextGL_EGL::get_window_width() {
-	return 64;
+	EGLint size = 0;
+	eglQuerySurface(eglDpy, eglSurf, EGL_WIDTH, &size);
+	return size;
 }
 
 int ContextGL_EGL::get_window_height() {
-	return 128;
+	EGLint size = 0;
+	eglQuerySurface(eglDpy, eglSurf, EGL_HEIGHT, &size);
+	return size;
 }
 
 void *ContextGL_EGL::get_glx_context() {
