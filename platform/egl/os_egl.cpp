@@ -100,7 +100,7 @@ Error OS_EGL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	while (!context_gl) {
 		context_gl = memnew(ContextGL_EGL(current_videomode, opengl_api_type));
 
-		if (context_gl->initialize() != OK) {
+		if (context_gl->initialize(p_desired.width, p_desired.height) != OK) {
 			memdelete(context_gl);
 			context_gl = NULL;
 
@@ -327,7 +327,7 @@ Point2 OS_EGL::get_screen_position(int p_screen) const {
 }
 
 Size2 OS_EGL::get_screen_size(int p_screen) const {
-	return Point2i(64, 128);
+	return Point2i(current_videomode.width, current_videomode.height);
 }
 
 int OS_EGL::get_screen_dpi(int p_screen) const {
@@ -342,11 +342,11 @@ void OS_EGL::set_window_position(const Point2 &p_position) {
 }
 
 Size2 OS_EGL::get_window_size() const {
-	return Point2i(64, 128);
+	return Point2i(current_videomode.width, current_videomode.height);
 }
 
 Size2 OS_EGL::get_real_window_size() const {
-	return Point2i(64, 128);
+	return Point2i(current_videomode.width, current_videomode.height);
 }
 
 Size2 OS_EGL::get_max_window_size() const {
@@ -358,12 +358,19 @@ Size2 OS_EGL::get_min_window_size() const {
 }
 
 void OS_EGL::set_min_window_size(const Size2 p_size) {
+	min_size = p_size;
 }
 
 void OS_EGL::set_max_window_size(const Size2 p_size) {
+	max_size = p_size;
 }
 
 void OS_EGL::set_window_size(const Size2 p_size) {
+	context_gl->set_buffer_size(p_size.width, p_size.height);
+//	glViewport(0, 0, p_size.width, p_size.height);
+//	glScissor(0, 0, p_size.width, p_size.height);
+	current_videomode.width = p_size.width;
+	current_videomode.height = p_size.height;
 }
 
 void OS_EGL::set_window_fullscreen(bool p_enabled) {

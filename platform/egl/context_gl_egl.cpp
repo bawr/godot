@@ -31,8 +31,6 @@
 #include "context_gl_egl.h"
 
 #ifdef EGL_ENABLED
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 void ContextGL_EGL::release_current() {
@@ -47,7 +45,20 @@ void ContextGL_EGL::swap_buffers() {
 	eglSwapBuffers(eglDpy, eglSurf);
 }
 
-Error ContextGL_EGL::initialize() {
+void ContextGL_EGL::set_buffer_size(const int width, const int height) {
+	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx);
+	eglDestroySurface(eglDpy, eglSurf);
+
+	static const EGLint pbufferAttribs[] = {
+		EGL_WIDTH, width,
+		EGL_HEIGHT, height,
+		EGL_NONE,
+	};
+	eglSurf = eglCreatePbufferSurface(eglDpy, eglCfg, pbufferAttribs);
+	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
+}
+
+Error ContextGL_EGL::initialize(const int width, const int height) {
 	EGLint numConfigs;
 
 	static const EGLint visual_attribs_layers[] = {
@@ -72,14 +83,14 @@ Error ContextGL_EGL::initialize() {
 	};
 
 	static const EGLint pbufferAttribs[] = {
-		EGL_WIDTH, 64,
-		EGL_HEIGHT, 128,
+		EGL_WIDTH, width,
+		EGL_HEIGHT, height,
 		EGL_NONE,
 	};
 
 	static const EGLint contextAttribs[] = {
-		EGL_CONTEXT_MAJOR_VERSION, 3,
-		EGL_CONTEXT_MINOR_VERSION, 3,
+		EGL_CONTEXT_MAJOR_VERSION, (context_type == ContextType::GLES_3_0_COMPATIBLE) ? 3 : 2,
+		EGL_CONTEXT_MINOR_VERSION, (context_type == ContextType::GLES_3_0_COMPATIBLE) ? 3 : 0,
 		EGL_NONE,
 	};
 
@@ -100,16 +111,20 @@ Error ContextGL_EGL::initialize() {
 
 	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
 
-	use_vsync = false;
+	set_use_vsync(false);
 	return OK;
 }
 
 int ContextGL_EGL::get_window_width() {
-	return 64;
+	EGLint size = 0;
+	eglQuerySurface(eglDpy, eglSurf, EGL_WIDTH, &size);
+	return size;
 }
 
 int ContextGL_EGL::get_window_height() {
-	return 128;
+	EGLint size = 0;
+	eglQuerySurface(eglDpy, eglSurf, EGL_HEIGHT, &size);
+	return size;
 }
 
 void *ContextGL_EGL::get_glx_context() {
@@ -117,41 +132,15 @@ void *ContextGL_EGL::get_glx_context() {
 }
 
 void ContextGL_EGL::set_use_vsync(bool p_use) {
-/*
-	static bool setup = false;
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = NULL;
-
-	if (!setup) {
-		setup = true;
-		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1)
-			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		if (extensions.find("GLX_MESA_swap_control") != -1)
-			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		if (extensions.find("GLX_SGI_swap_control") != -1)
-			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
-	}
-	int val = p_use ? 1 : 0;
-	if (glXSwapIntervalMESA) {
-		glXSwapIntervalMESA(val);
-	} else if (glXSwapIntervalSGI) {
-		glXSwapIntervalSGI(val);
-	} else if (glXSwapIntervalEXT) {
-		GLXDrawable drawable = glXGetCurrentDrawable();
-		glXSwapIntervalEXT(x11_display, drawable, val);
-	} else
-		return;
+	eglSwapInterval(eglDpy, p_use);
 	use_vsync = p_use;
- */
 }
 bool ContextGL_EGL::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 ContextGL_EGL::ContextGL_EGL(const OS::VideoMode &p_default_video_mode, ContextType p_context_type) {
+	context_type = p_context_type;
 	double_buffer = false;
 	direct_render = false;
 	egl_major = 0;
