@@ -64,11 +64,12 @@ public:
 	void release_current();
 	void make_current();
 	void swap_buffers();
+	void set_buffer_size(const int width, const int height);
 	int get_window_width();
 	int get_window_height();
 	void *get_glx_context();
 
-	Error initialize();
+	Error initialize(const int width, const int height);
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
