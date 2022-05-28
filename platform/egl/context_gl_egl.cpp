@@ -31,7 +31,10 @@
 #include "context_gl_egl.h"
 
 #ifdef EGL_ENABLED
+#include <fcntl.h>
+#include <sys/mman.h>
 #include <unistd.h>
+#include "thirdparty/glad/glad/glad.h"
 
 void ContextGL_EGL::release_current() {
 	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -41,9 +44,55 @@ void ContextGL_EGL::make_current() {
 	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
 }
 
+#define PIXEL_COPY_STRATEGY 2
+#define PIXEL_COPY_DEPTH 1
+#define PIXEL_COPY_COLOR 1
+
 void ContextGL_EGL::swap_buffers() {
+#if PIXEL_COPY_STRATEGY == 0
 	eglSwapBuffers(eglDpy, eglSurf);
+#elif PIXEL_COPY_STRATEGY == 1
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	#if PIXEL_COPY_DEPTH
+		glReadPixels(0, 0, 128, 128, GL_DEPTH_COMPONENT, GL_FLOAT, copy_buffer);
+	#endif
+	#if PIXEL_COPY_COLOR
+		glReadPixels(0, 0, 128, 128, GL_RGB, GL_UNSIGNED_BYTE, (char*)copy_buffer+(128 * 128 * 4));
+	#endif
+	eglSwapBuffers(eglDpy, eglSurf);
+#elif PIXEL_COPY_STRATEGY == 2
+	if (pbo_id == 0) {
+		glGenBuffers(1, &pbo_id);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_id);
+		glBufferData(GL_PIXEL_PACK_BUFFER, 128 * 128 * (4 + 3), NULL, GL_STREAM_READ);
+	#if PIXEL_COPY_DEPTH
+		glReadPixels(0, 0, 128, 128, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	#endif
+	#if PIXEL_COPY_COLOR
+		glReadPixels(0, 0, 128, 128, GL_RGB, GL_UNSIGNED_BYTE, (void*)(128 * 128 * 4));
+	#endif
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+	}
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_id);
+	void * ptr = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+	memcpy(copy_buffer, ptr, (128 * 128 * (4 + 3)));
+	glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+	eglSwapBuffers(eglDpy, eglSurf);
+
+	glBufferData(GL_PIXEL_PACK_BUFFER, 128 * 128 * (4 + 3), NULL, GL_STREAM_READ);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	#if PIXEL_COPY_DEPTH
+		glReadPixels(0, 0, 128, 128, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	#endif
+	#if PIXEL_COPY_COLOR
+		glReadPixels(0, 0, 128, 128, GL_RGB, GL_UNSIGNED_BYTE, (void*)(128 * 128 * 4));
+	#endif
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+#endif
 }
+
 
 void ContextGL_EGL::set_buffer_size(const int width, const int height) {
 	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx);
@@ -111,6 +160,17 @@ Error ContextGL_EGL::initialize(const int width, const int height) {
 
 	eglMakeCurrent(eglDpy, eglSurf, eglSurf, eglCtx);
 
+#if PIXEL_COPY_STRATEGY == 0
+#elif PIXEL_COPY_STRATEGY == 1
+	int buffer_size = 128 * 128 * (4 + 3);
+	copy_buffer = malloc(buffer_size);
+#elif PIXEL_COPY_STRATEGY == 2
+	int buffer_size = 128 * 128 * (4 + 3);
+	int buffer_fd = open("/tmp/godot.data", O_RDWR | O_CREAT | O_TRUNC, 0666);
+	ftruncate(buffer_fd, buffer_size);
+	copy_buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, buffer_fd, 0);
+#endif
+
 	set_use_vsync(false);
 	return OK;
 }
@@ -145,6 +205,7 @@ ContextGL_EGL::ContextGL_EGL(const OS::VideoMode &p_default_video_mode, ContextT
 	direct_render = false;
 	egl_major = 0;
 	egl_minor = 0;
+	pbo_id = 0;
 }
 
 ContextGL_EGL::~ContextGL_EGL() {

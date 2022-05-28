@@ -28,6 +28,7 @@ precision mediump float;
 in vec2 uv_interp;
 
 uniform highp sampler2D source; //texunit:0
+uniform highp sampler2D sdepth; //texunit:1
 
 uniform float exposure;
 uniform float white;
@@ -414,6 +415,7 @@ vec3 apply_cas(vec3 color, float exposure, vec2 uv_interp, float sharpen_intensi
 
 void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
+	vec4 depth = textureLod(sdepth, uv_interp, 0.0f);
 
 	// Exposure
 	float full_exposure = exposure;
@@ -475,5 +477,5 @@ void main() {
 	color = apply_color_correction(color, color_correction);
 #endif
 
-	frag_color = vec4(color, 1.0f);
+	frag_color = vec4(color, depth.r);
 }

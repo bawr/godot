@@ -34,6 +34,8 @@
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 
+#include "debug_groups.h"
+
 /* TEXTURE API */
 
 #define _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8C00
@@ -107,7 +109,7 @@
 #define glClearDepth glClearDepthf
 #endif
 
-void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
+void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) { SCOPE();
 #ifdef GLES_OVER_GL
 
 	for (int i = 0; i < levels; i++) {
@@ -123,7 +125,7 @@ void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, 
 
 GLuint RasterizerStorageGLES3::system_fbo = 0;
 
-Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const {
+Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const { SCOPE();
 	r_compressed = false;
 	r_gl_format = 0;
 	r_real_format = p_format;
@@ -520,7 +522,7 @@ static const GLenum _cube_side_enum[6] = {
 
 };
 
-RID RasterizerStorageGLES3::texture_create() {
+RID RasterizerStorageGLES3::texture_create() { SCOPE();
 	Texture *texture = memnew(Texture);
 	ERR_FAIL_COND_V(!texture, RID());
 	glGenTextures(1, &texture->tex_id);
@@ -530,7 +532,7 @@ RID RasterizerStorageGLES3::texture_create() {
 	return texture_owner.make_rid(texture);
 }
 
-void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VisualServer::TextureType p_type, uint32_t p_flags) {
+void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VisualServer::TextureType p_type, uint32_t p_flags) { SCOPE();
 	GLenum format;
 	GLenum internal_format;
 	GLenum type;
@@ -687,7 +689,7 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	texture->active = true;
 }
 
-void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
+void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) { SCOPE();
 	Texture *texture = texture_owner.get(p_texture);
 
 	ERR_FAIL_COND(!texture);
@@ -905,7 +907,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 // Uploads pixel data to a sub-region of a texture, for the specified mipmap.
 // The texture pixels must have been allocated before, because most features seen in texture_set_data() make no sense in a partial update.
 // TODO If we want this to be usable without pre-filling pixels with a full image, we have to call glTexImage2D() with null data.
-void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer) {
+void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer) { SCOPE();
 	Texture *texture = texture_owner.get(p_texture);
 
 	ERR_FAIL_COND(!texture);
@@ -990,7 +992,7 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	}
 }
 
-Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) const {
+Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) const { SCOPE();
 	Texture *texture = texture_owner.get(p_texture);
 
 	ERR_FAIL_COND_V(!texture, Ref<Image>());
@@ -1269,7 +1271,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 #endif
 }
 
-void RasterizerStorageGLES3::texture_set_flags(RID p_texture, uint32_t p_flags) {
+void RasterizerStorageGLES3::texture_set_flags(RID p_texture, uint32_t p_flags) { SCOPE();
 	Texture *texture = texture_owner.get(p_texture);
 	ERR_FAIL_COND(!texture);
 	if (texture->render_target) {
@@ -1370,7 +1372,7 @@ uint32_t RasterizerStorageGLES3::texture_get_texid(RID p_texture) const {
 
 	return texture->tex_id;
 }
-void RasterizerStorageGLES3::texture_bind(RID p_texture, uint32_t p_texture_no) {
+void RasterizerStorageGLES3::texture_bind(RID p_texture, uint32_t p_texture_no) { SCOPE();
 	Texture *texture = texture_owner.getornull(p_texture);
 
 	ERR_FAIL_COND(!texture);
@@ -1414,7 +1416,7 @@ void RasterizerStorageGLES3::texture_set_size_override(RID p_texture, int p_widt
 	texture->height = p_height;
 }
 
-void RasterizerStorageGLES3::texture_set_path(RID p_texture, const String &p_path) {
+void RasterizerStorageGLES3::texture_set_path(RID p_texture, const String &p_path) { // XYZZY
 	Texture *texture = texture_owner.get(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -1479,7 +1481,7 @@ void RasterizerStorageGLES3::texture_set_detect_normal_callback(RID p_texture, V
 	texture->detect_normal_ud = p_userdata;
 }
 
-RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_resolution) const {
+RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_resolution) const { SCOPE();
 	Texture *texture = texture_owner.get(p_source);
 	ERR_FAIL_COND_V(!texture, RID());
 	ERR_FAIL_COND_V(texture->type != VS::TEXTURE_TYPE_CUBEMAP, RID());
@@ -1663,7 +1665,7 @@ RID RasterizerStorageGLES3::sky_create() {
 	return sky_owner.make_rid(sky);
 }
 
-void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size) {
+void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size) { SCOPE();
 	Sky *sky = sky_owner.getornull(p_sky);
 	ERR_FAIL_COND(!sky);
 
@@ -2077,7 +2079,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 /* SHADER API */
 
-RID RasterizerStorageGLES3::shader_create() {
+RID RasterizerStorageGLES3::shader_create() { SCOPE();
 	Shader *shader = memnew(Shader);
 	shader->mode = VS::SHADER_SPATIAL;
 	shader->shader = &scene->state.scene_shader;
@@ -2088,7 +2090,7 @@ RID RasterizerStorageGLES3::shader_create() {
 	return rid;
 }
 
-void RasterizerStorageGLES3::_shader_make_dirty(Shader *p_shader) {
+void RasterizerStorageGLES3::_shader_make_dirty(Shader *p_shader) { SCOPE();
 	if (p_shader->dirty_list.in_list()) {
 		return;
 	}
@@ -2096,7 +2098,7 @@ void RasterizerStorageGLES3::_shader_make_dirty(Shader *p_shader) {
 	_shader_dirty_list.add(&p_shader->dirty_list);
 }
 
-void RasterizerStorageGLES3::shader_set_code(RID p_shader, const String &p_code) {
+void RasterizerStorageGLES3::shader_set_code(RID p_shader, const String &p_code) { SCOPE();
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
@@ -2142,7 +2144,7 @@ String RasterizerStorageGLES3::shader_get_code(RID p_shader) const {
 	return shader->code;
 }
 
-void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
+void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const { SCOPE();
 	_shader_dirty_list.remove(&p_shader->dirty_list);
 
 	p_shader->valid = false;
@@ -3324,13 +3326,13 @@ void RasterizerStorageGLES3::update_dirty_materials() {
 
 /* MESH API */
 
-RID RasterizerStorageGLES3::mesh_create() {
+RID RasterizerStorageGLES3::mesh_create() { SCOPE();
 	Mesh *mesh = memnew(Mesh);
 
 	return mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
+void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) { SCOPE();
 	PoolVector<uint8_t> array = p_array;
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -4005,7 +4007,7 @@ AABB RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 
 	return mesh->surfaces[p_surface]->aabb;
 }
-Vector<PoolVector<uint8_t>> RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
+Vector<PoolVector<uint8_t>> RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const { SCOPE();
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t>>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t>>());
@@ -4106,7 +4108,7 @@ AABB RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const {
 	return mesh->custom_aabb;
 }
 
-AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
+AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const { SCOPE();
 	Mesh *mesh = mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
@@ -4227,7 +4229,7 @@ void RasterizerStorageGLES3::mesh_clear(RID p_mesh) {
 	}
 }
 
-void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p_weights) {
+void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p_weights) { SCOPE();
 	glBindVertexArray(s->array_id);
 
 	BlendShapeShaderGLES3::Conditionals cond[VS::ARRAY_MAX - 1] = {
@@ -4444,7 +4446,7 @@ RID RasterizerStorageGLES3::multimesh_create() {
 	return multimesh_owner.make_rid(multimesh);
 }
 
-void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format) {
+void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format) { SCOPE();
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
@@ -4577,7 +4579,7 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 	}
 }
 
-int RasterizerStorageGLES3::multimesh_get_instance_count(RID p_multimesh) const {
+int RasterizerStorageGLES3::multimesh_get_instance_count(RID p_multimesh) const { SCOPE();
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, 0);
 
@@ -6485,7 +6487,7 @@ void RasterizerStorageGLES3::_particles_process(Particles *p_particles, float p_
 	//*/
 }
 
-void RasterizerStorageGLES3::update_particles() {
+void RasterizerStorageGLES3::update_particles() { SCOPE();
 	glEnable(GL_RASTERIZER_DISCARD);
 
 	while (particle_update_list.first()) {
@@ -6875,7 +6877,7 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 */
 }
 
-void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
+void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) { SCOPE();
 	if (rt->width <= 0 || rt->height <= 0) {
 		return;
 	}
@@ -6903,10 +6905,10 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			image_format = Image::FORMAT_RGBA8;
 		}
 	} else {
-		color_internal_format = GL_RGBA16F;
+		color_internal_format = GL_RGBA32F;
 		color_format = GL_RGBA;
-		color_type = GL_HALF_FLOAT;
-		image_format = Image::FORMAT_RGBAH;
+		color_type = GL_FLOAT;
+		image_format = Image::FORMAT_RGBAF;
 	}
 
 	{
@@ -7253,7 +7255,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	}
 }
 
-RID RasterizerStorageGLES3::render_target_create() {
+RID RasterizerStorageGLES3::render_target_create() { SCOPE();
 	RenderTarget *rt = memnew(RenderTarget);
 
 	Texture *t = memnew(Texture);
@@ -7302,7 +7304,7 @@ void RasterizerStorageGLES3::render_target_set_size(RID p_render_target, int p_w
 	_render_target_allocate(rt);
 }
 
-RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target) const {
+RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target) const { SCOPE();
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
@@ -7313,7 +7315,7 @@ RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target) const
 	}
 }
 
-uint32_t RasterizerStorageGLES3::render_target_get_depth_texture_id(RID p_render_target) const {
+uint32_t RasterizerStorageGLES3::render_target_get_depth_texture_id(RID p_render_target) const { SCOPE();
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, 0);
 
@@ -7324,7 +7326,7 @@ uint32_t RasterizerStorageGLES3::render_target_get_depth_texture_id(RID p_render
 	}
 }
 
-void RasterizerStorageGLES3::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id, unsigned int p_depth_id) {
+void RasterizerStorageGLES3::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id, unsigned int p_depth_id) { SCOPE();
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
@@ -7511,7 +7513,7 @@ void RasterizerStorageGLES3::render_target_set_sharpen_intensity(RID p_render_ta
 
 /* CANVAS SHADOW */
 
-RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
+RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) { SCOPE();
 	CanvasLightShadow *cls = memnew(CanvasLightShadow);
 	if (p_width > config.max_texture_size) {
 		p_width = config.max_texture_size;
@@ -8029,7 +8031,7 @@ String RasterizerStorageGLES3::get_video_adapter_vendor() const {
 	return (const char *)glGetString(GL_VENDOR);
 }
 
-void RasterizerStorageGLES3::initialize() {
+void RasterizerStorageGLES3::initialize() { SCOPE();
 	RasterizerStorageGLES3::system_fbo = 0;
 
 	//// extensions config

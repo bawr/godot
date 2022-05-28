@@ -59,6 +59,8 @@ private:
 	EGLint egl_minor;
 	bool use_vsync;
 	ContextType context_type;
+	void* copy_buffer;
+	unsigned int pbo_id;
 
 public:
 	void release_current();
