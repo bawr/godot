@@ -213,8 +213,6 @@ public:
 		bool prepared_depth_texture;
 		bool bound_depth_texture;
 
-		GLuint pixel_pack_pbo;
-
 		VS::ViewportDebugDraw debug_draw;
 	} state;
 

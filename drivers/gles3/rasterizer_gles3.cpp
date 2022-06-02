@@ -33,8 +33,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-#include "debug_groups.h"
-
 RasterizerStorage *RasterizerGLES3::get_storage() {
 	return storage;
 }
@@ -193,7 +191,7 @@ void RasterizerGLES3::initialize() {
 	scene->initialize();
 }
 
-void RasterizerGLES3::begin_frame(double frame_step) { SCOPE();
+void RasterizerGLES3::begin_frame(double frame_step) {
 	time_total += frame_step * time_scale;
 
 	if (frame_step == 0) {
@@ -219,7 +217,7 @@ void RasterizerGLES3::begin_frame(double frame_step) { SCOPE();
 	scene->iteration();
 }
 
-void RasterizerGLES3::set_current_render_target(RID p_render_target) { SCOPE();
+void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		//handle pending clear request, if the framebuffer was not cleared
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
@@ -330,7 +328,7 @@ void RasterizerGLES3::set_shader_time_scale(float p_scale) {
 	time_scale = p_scale;
 }
 
-void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) { SCOPE();
+void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 	ERR_FAIL_COND(storage->frame.current_rt);
 
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
@@ -377,11 +375,11 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 		}
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-		glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	}
 }
 
-void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) { SCOPE();
+void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
 	ERR_FAIL_COND(storage->frame.current_rt);
 
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
@@ -402,18 +400,16 @@ void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
-	{
-		SCOPE();
-		if (OS::get_singleton()->is_layered_allowed()) {
-			if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-				//clear alpha
-				glColorMask(false, false, false, true);
-				glClearColor(0, 0, 0, 1);
-				glClear(GL_COLOR_BUFFER_BIT);
-				glColorMask(true, true, true, true);
-			}
+	if (OS::get_singleton()->is_layered_allowed()) {
+		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+			//clear alpha
+			glColorMask(false, false, false, true);
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glColorMask(true, true, true, true);
 		}
 	}
+
 	if (p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
 	} else {

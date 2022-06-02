@@ -36,8 +36,6 @@
 #include "rasterizer_scene_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 
-#include "debug_groups.h"
-
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -88,7 +86,7 @@ static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_arra
 	}
 }
 
-RID RasterizerCanvasBaseGLES3::light_internal_create() { SCOPE();
+RID RasterizerCanvasBaseGLES3::light_internal_create() {
 	LightInternal *li = memnew(LightInternal);
 
 	glGenBuffers(1, &li->ubo);
@@ -99,7 +97,7 @@ RID RasterizerCanvasBaseGLES3::light_internal_create() { SCOPE();
 	return light_internal_owner.make_rid(li);
 }
 
-void RasterizerCanvasBaseGLES3::light_internal_update(RID p_rid, Light *p_light) { SCOPE();
+void RasterizerCanvasBaseGLES3::light_internal_update(RID p_rid, Light *p_light) {
 	LightInternal *li = light_internal_owner.getornull(p_rid);
 	ERR_FAIL_COND(!li);
 
@@ -130,7 +128,7 @@ void RasterizerCanvasBaseGLES3::light_internal_update(RID p_rid, Light *p_light)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES3::light_internal_free(RID p_rid) { SCOPE();
+void RasterizerCanvasBaseGLES3::light_internal_free(RID p_rid) {
 	LightInternal *li = light_internal_owner.getornull(p_rid);
 	ERR_FAIL_COND(!li);
 
@@ -139,7 +137,7 @@ void RasterizerCanvasBaseGLES3::light_internal_free(RID p_rid) { SCOPE();
 	memdelete(li);
 }
 
-void RasterizerCanvasBaseGLES3::canvas_begin() { SCOPE();
+void RasterizerCanvasBaseGLES3::canvas_begin() {
 	if (storage->frame.current_rt && storage->frame.clear_request) {
 		// a clear request may be pending, so do it
 		bool transparent = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
@@ -200,7 +198,7 @@ void RasterizerCanvasBaseGLES3::canvas_begin() { SCOPE();
 	state.using_skeleton = false;
 }
 
-void RasterizerCanvasBaseGLES3::canvas_end() { SCOPE();
+void RasterizerCanvasBaseGLES3::canvas_end() {
 	glBindVertexArray(0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
 	glColorMask(1, 1, 1, 1);
@@ -212,7 +210,7 @@ void RasterizerCanvasBaseGLES3::canvas_end() { SCOPE();
 	state.using_light_angle = false;
 }
 
-RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map, bool p_force) { SCOPE();
+RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map, bool p_force) {
 	RasterizerStorageGLES3::Texture *tex_return = nullptr;
 
 	if (p_texture == state.current_tex && !p_force) {
@@ -288,7 +286,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 	return tex_return;
 }
 
-void RasterizerCanvasBaseGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepatch, bool p_light_angle, bool p_modulate, bool p_large_vertex) { SCOPE();
+void RasterizerCanvasBaseGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepatch, bool p_light_angle, bool p_modulate, bool p_large_vertex) {
 	// this state check could be done individually
 	if (state.using_texture_rect == p_enable && state.using_ninepatch == p_ninepatch && state.using_light_angle == p_light_angle && state.using_modulate == p_modulate && state.using_large_vertex == p_large_vertex) {
 		return;
@@ -332,7 +330,7 @@ void RasterizerCanvasBaseGLES3::_set_texture_rect_mode(bool p_enable, bool p_nin
 	state.using_large_vertex = p_large_vertex;
 }
 
-void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const int *p_bones, const float *p_weights) { SCOPE();
+void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const int *p_bones, const float *p_weights) {
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
@@ -413,7 +411,7 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) { SCOPE();
+void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
@@ -462,7 +460,7 @@ void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_c
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) { SCOPE();
+void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
@@ -527,7 +525,7 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) { SCOPE();
+void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) {
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
 
 	//#define GLES_USE_PRIMITIVE_BUFFER
@@ -597,7 +595,7 @@ void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 
 	storage->info.render._2d_draw_call_count++;
 }
 
-void RasterizerCanvasBaseGLES3::render_rect_nvidia_workaround(const Item::CommandRect *p_rect, const RasterizerStorageGLES3::Texture *p_texture) { SCOPE();
+void RasterizerCanvasBaseGLES3::render_rect_nvidia_workaround(const Item::CommandRect *p_rect, const RasterizerStorageGLES3::Texture *p_texture) {
 	if (p_texture) {
 		bool send_light_angles = false;
 
@@ -717,7 +715,7 @@ void RasterizerCanvasBaseGLES3::render_rect_nvidia_workaround(const Item::Comman
 	}
 }
 
-void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) { SCOPE();
+void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) {
 	ERR_FAIL_COND_MSG(storage->frame.current_rt->effects.mip_maps[0].sizes.size() == 0, "Can't use screen texture copying in a render target configured without copy buffers. To resolve this, change the viewport's Usage property to \"2D\" or \"3D\" instead of \"2D Without Sampling\" or \"3D Without Effects\" respectively.");
 
 	glDisable(GL_BLEND);
@@ -792,7 +790,7 @@ void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) { SCOPE();
 	glEnable(GL_BLEND);
 }
 
-void RasterizerCanvasBaseGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) { SCOPE();
+void RasterizerCanvasBaseGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {
 	Light *light = p_lights_with_shadow;
 
 	canvas_begin(); //reset
@@ -818,7 +816,7 @@ void RasterizerCanvasBaseGLES3::canvas_debug_viewport_shadows(Light *p_lights_wi
 	canvas_end();
 }
 
-void RasterizerCanvasBaseGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) { SCOPE();
+void RasterizerCanvasBaseGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
 	RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
 	ERR_FAIL_COND(!cls);
 
@@ -931,7 +929,7 @@ void RasterizerCanvasBaseGLES3::canvas_light_shadow_buffer_update(RID p_buffer, 
 
 	glBindVertexArray(0);
 }
-void RasterizerCanvasBaseGLES3::reset_canvas() { SCOPE();
+void RasterizerCanvasBaseGLES3::reset_canvas() {
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glColorMask(1, 1, 1, 1); //don't touch alpha
@@ -992,7 +990,7 @@ void RasterizerCanvasBaseGLES3::reset_canvas() { SCOPE();
 	state.canvas_texscreen_used = false;
 }
 
-void RasterizerCanvasBaseGLES3::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) { SCOPE();
+void RasterizerCanvasBaseGLES3::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
@@ -1000,7 +998,7 @@ void RasterizerCanvasBaseGLES3::draw_generic_textured_rect(const Rect2 &p_rect, 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void RasterizerCanvasBaseGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) { SCOPE();
+void RasterizerCanvasBaseGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
 	Vector2 half_size;
 	if (storage->frame.current_rt) {
 		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
@@ -1033,7 +1031,7 @@ void RasterizerCanvasBaseGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, f
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
 }
 
-void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *black_image) { SCOPE();
+void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *black_image) {
 	Vector2 window_size = OS::get_singleton()->get_window_size();
 	int window_h = window_size.height;
 	int window_w = window_size.width;
@@ -1096,7 +1094,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 	}
 }
 
-void RasterizerCanvasBaseGLES3::initialize() { SCOPE();
+void RasterizerCanvasBaseGLES3::initialize() {
 	int flag_stream_mode = GLOBAL_GET("rendering/2d/opengl/legacy_stream");
 	switch (flag_stream_mode) {
 		default: {
@@ -1260,7 +1258,7 @@ void RasterizerCanvasBaseGLES3::initialize() { SCOPE();
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/2d/snapping/use_gpu_pixel_snap", false));
 }
 
-void RasterizerCanvasBaseGLES3::finalize() { SCOPE();
+void RasterizerCanvasBaseGLES3::finalize() {
 	glDeleteBuffers(1, &data.canvas_quad_vertices);
 	glDeleteVertexArrays(1, &data.canvas_quad_array);
 
