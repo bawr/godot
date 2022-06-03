@@ -31,7 +31,49 @@
 #include "context_gl_egl.h"
 
 #ifdef EGL_ENABLED
-#include <unistd.h>
+
+EGLDisplay ContextGL_EGL::get_display() {
+	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+	PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
+	PFNEGLQUERYDEVICEATTRIBEXTPROC eglQueryDeviceAttribEXT = (PFNEGLQUERYDEVICEATTRIBEXTPROC) eglGetProcAddress("eglQueryDeviceAttribEXT");
+
+	char *env_cuda_id = std::getenv("EGL_CUDA_ID");
+	int dev_cuda_id = -1;
+	if (env_cuda_id) {
+		dev_cuda_id = std::atoi(env_cuda_id);
+	}
+
+	EGLDeviceEXT egl_devices[16] = {};
+	EGLint num_devices = 0;
+	eglQueryDevicesEXT(16, &egl_devices[0], &num_devices);
+
+	int egl_selected = -1;
+	int egl_fallback = -1;
+	int last_cuda_id = -1;
+
+	for (int i=0; i<num_devices; i++) {
+		EGLDeviceEXT egl_device = egl_devices[i];
+		EGLAttrib egl_cuda_id;
+		if (eglQueryDeviceAttribEXT(egl_device, EGL_CUDA_DEVICE_NV, &egl_cuda_id)) {
+			if (last_cuda_id < egl_cuda_id ) {
+				last_cuda_id = egl_cuda_id;
+				egl_fallback = i;
+			}
+			if (egl_cuda_id == dev_cuda_id) {
+				egl_selected = i;
+			}
+		}
+	}
+
+	if (egl_selected >= 0) {
+		return eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, egl_devices[egl_selected], NULL);
+	}
+	if (egl_fallback >= 0) {
+		return eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, egl_devices[egl_fallback], NULL);
+	}
+
+	return eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, EGL_DEFAULT_DISPLAY, NULL);
+}
 
 void ContextGL_EGL::release_current() {
 	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -94,8 +136,7 @@ Error ContextGL_EGL::initialize(const int width, const int height) {
 		EGL_NONE,
 	};
 
-   	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
-	eglDpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, EGL_DEFAULT_DISPLAY, NULL);
+	eglDpy = get_display();
 	eglInitialize(eglDpy, &egl_major, &egl_minor);
 
 	if (OS::get_singleton()->is_layered_allowed()) {

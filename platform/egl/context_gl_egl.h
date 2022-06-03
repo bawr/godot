@@ -59,6 +59,7 @@ private:
 	EGLint egl_minor;
 	bool use_vsync;
 	ContextType context_type;
+	EGLDisplay get_display();
 
 public:
 	void release_current();
