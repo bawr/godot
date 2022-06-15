@@ -99,9 +99,9 @@ int open_gl(void) {
     };
 #else
 #ifdef EGL_ENABLED
-    static const char *NAMES[] = {"libGL.so.1", "libGL.so"};
-#else
     static const char *NAMES[] = {"libOpenGL.so.0", "libOpenGL.so"};
+#else
+    static const char *NAMES[] = {"libGL.so.1", "libGL.so"};
 #endif
 #endif
 
