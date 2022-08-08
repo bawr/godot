@@ -31,6 +31,14 @@
 #ifndef MATH_FUNCS_H
 #define MATH_FUNCS_H
 
+#ifdef ANDROID_ENABLED
+#define FTRIG1(fn, a) (float) ::fn((double) a)
+#define FTRIG2(fn, a, b) (float) ::fn((double) a, (double) b)
+#else
+#define FTRIG1(fn, a) ::fn##f(a)
+#define FTRIG2(fn, a, b) ::fn##f(a, b)
+#endif
+
 #include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
 #include "core/typedefs.h"
@@ -50,61 +58,61 @@ public:
 	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
-	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
+	static _ALWAYS_INLINE_ float sin(float p_x) { return FTRIG1(sin, p_x); }
 
 	static _ALWAYS_INLINE_ double cos(double p_x) { return ::cos(p_x); }
-	static _ALWAYS_INLINE_ float cos(float p_x) { return ::cosf(p_x); }
+	static _ALWAYS_INLINE_ float cos(float p_x) { return FTRIG1(cos, p_x); }
 
 	static _ALWAYS_INLINE_ double tan(double p_x) { return ::tan(p_x); }
-	static _ALWAYS_INLINE_ float tan(float p_x) { return ::tanf(p_x); }
+	static _ALWAYS_INLINE_ float tan(float p_x) { return FTRIG1(tan, p_x); }
 
 	static _ALWAYS_INLINE_ double sinh(double p_x) { return ::sinh(p_x); }
-	static _ALWAYS_INLINE_ float sinh(float p_x) { return ::sinhf(p_x); }
+	static _ALWAYS_INLINE_ float sinh(float p_x) { return FTRIG1(sinh, p_x); }
 
-	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : FTRIG1(sin, p_x) / p_x; }
 	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 
 	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
 	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
-	static _ALWAYS_INLINE_ float cosh(float p_x) { return ::coshf(p_x); }
+	static _ALWAYS_INLINE_ float cosh(float p_x) { return FTRIG1(cosh, p_x); }
 
 	static _ALWAYS_INLINE_ double tanh(double p_x) { return ::tanh(p_x); }
-	static _ALWAYS_INLINE_ float tanh(float p_x) { return ::tanhf(p_x); }
+	static _ALWAYS_INLINE_ float tanh(float p_x) { return FTRIG1(tanh, p_x); }
 
 	static _ALWAYS_INLINE_ double asin(double p_x) { return ::asin(p_x); }
-	static _ALWAYS_INLINE_ float asin(float p_x) { return ::asinf(p_x); }
+	static _ALWAYS_INLINE_ float asin(float p_x) { return FTRIG1(asin, p_x); }
 
 	static _ALWAYS_INLINE_ double acos(double p_x) { return ::acos(p_x); }
-	static _ALWAYS_INLINE_ float acos(float p_x) { return ::acosf(p_x); }
+	static _ALWAYS_INLINE_ float acos(float p_x) { return FTRIG1(acos, p_x); }
 
 	static _ALWAYS_INLINE_ double atan(double p_x) { return ::atan(p_x); }
-	static _ALWAYS_INLINE_ float atan(float p_x) { return ::atanf(p_x); }
+	static _ALWAYS_INLINE_ float atan(float p_x) { return FTRIG1(atan, p_x); }
 
 	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return ::atan2(p_y, p_x); }
-	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return ::atan2f(p_y, p_x); }
+	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return FTRIG2(atan2, p_y, p_x); }
 
 	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
-	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }
+	static _ALWAYS_INLINE_ float sqrt(float p_x) { return FTRIG1(sqrt, p_x); }
 
 	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) { return ::fmod(p_x, p_y); }
-	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return ::fmodf(p_x, p_y); }
+	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return FTRIG2(fmod, p_x, p_y); }
 
 	static _ALWAYS_INLINE_ double floor(double p_x) { return ::floor(p_x); }
-	static _ALWAYS_INLINE_ float floor(float p_x) { return ::floorf(p_x); }
+	static _ALWAYS_INLINE_ float floor(float p_x) { return FTRIG1(floor, p_x); }
 
 	static _ALWAYS_INLINE_ double ceil(double p_x) { return ::ceil(p_x); }
-	static _ALWAYS_INLINE_ float ceil(float p_x) { return ::ceilf(p_x); }
+	static _ALWAYS_INLINE_ float ceil(float p_x) { return FTRIG1(ceil, p_x); }
 
 	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) { return ::pow(p_x, p_y); }
-	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return ::powf(p_x, p_y); }
+	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return FTRIG2(pow, p_x, p_y); }
 
 	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
-	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
+	static _ALWAYS_INLINE_ float log(float p_x) { return FTRIG1(log, p_x); }
 
 	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
-	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
+	static _ALWAYS_INLINE_ float exp(float p_x) { return FTRIG1(exp, p_x); }
 
 	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
 #ifdef _MSC_VER
