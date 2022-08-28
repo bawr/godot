@@ -57,6 +57,8 @@ private:
 	bool direct_render;
 	EGLint egl_major;
 	EGLint egl_minor;
+	unsigned int pbo_id;
+	void* copy_buffer;
 	bool use_vsync;
 	ContextType context_type;
 	EGLDisplay get_display();
