@@ -1,5 +1,5 @@
 name: ☁ Server Builds
-on: [push, pull_request]
+on: []
 
 # Global Settings
 env:
