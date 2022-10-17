@@ -34,7 +34,7 @@ jobs:
             target: release_debug
             tools: true
             sconsflags: debug_symbols=false
-            bin: "./bin/godot.x11.opt.debug.64"
+            bin: "./bin/godot.x11.opt.tools.64"
             artifact: true
             test: true
 
