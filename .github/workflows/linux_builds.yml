@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   BUILD_NAME: avalon
   GODOT_BASE_BRANCH: 3.4
-  SCONSFLAGS: verbose=yes warnings=all werror=yes
+  SCONSFLAGS: verbose=yes warnings=all
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -28,11 +28,11 @@ jobs:
             bin: "./bin/godot.egl.opt.debug.64"
             artifact: true
 
-          - name: X11 Runtime (target=release_debug, tools=no, debug_symbols=false)
+          - name: X11 Editor (target=release, tools=no, debug_symbols=false)
             platform: x11
             cache-name: linux-runtime-x11
             target: release_debug
-            tools: false
+            tools: true
             sconsflags: debug_symbols=false
             bin: "./bin/godot.x11.opt.debug.64"
             artifact: true
@@ -66,7 +66,7 @@ jobs:
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
-          platform: linuxbsd
+          platform: ${{ matrix.platform }}
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
 
