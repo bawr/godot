@@ -1,5 +1,5 @@
 name: 🤖 Android Builds
-on: []
+on: [push, pull_request]
 
 # Global Settings
 env:

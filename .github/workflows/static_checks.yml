@@ -1,5 +1,5 @@
 name: 📊 Static Checks
-on: []
+on: [push, pull_request]
 
 jobs:
   static-checks:
